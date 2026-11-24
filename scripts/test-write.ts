@@ -9,7 +9,7 @@ const cfg = {
 
 async function test() {
   const app = initializeApp(cfg);
-  const db = initializeFirestore(app, {});
+  const db = initializeFirestore(app, {}, 'test-db');
   try {
     await setDoc(doc(db, "schools", "school-main"), {
       name: "วิทยาลัยเทคนิคระยอง",

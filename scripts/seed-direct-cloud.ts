@@ -12,7 +12,7 @@ const cfg = {
 async function seed() {
   console.log("=== เริ่มยิงข้อมูลเข้า Firestore Cloud จริง ===");
   const app = initializeApp(cfg, "seeder-run");
-  const db = initializeFirestore(app, {});
+  const db = initializeFirestore(app, {}, 'test-db');
 
   const ds = createRayongDataset();
   const tt = createOfficialRayongTimetable(ds);
@@ -67,7 +67,7 @@ async function seed() {
 
   // 5. บันทึก Timetable ทางการของ อ.ปริญญา (Packed Timetable format)
   console.log("5. กำลังบันทึก Timetable ทางการ วท.ระยอง...");
-  const packed = encodePlacements(tt.placements, ds);
+  const packed = encodePlacements(tt.placements);
   await setDoc(doc(db, "schools", schoolId, "terms", termId, "timetables", tt.id), {
     ...stripId(tt),
     packed,

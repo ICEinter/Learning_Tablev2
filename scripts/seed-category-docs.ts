@@ -12,11 +12,11 @@ const cfg = {
 async function reorg() {
   console.log("=== เริ่มสร้าง Document แยกตามหมวดหมู่ในช่องสีน้ำเงิน (Collection schools) ===");
   const app = initializeApp(cfg, "reorg-run");
-  const db = initializeFirestore(app, {});
+  const db = initializeFirestore(app, {}, 'test-db');
 
   const ds = createRayongDataset();
   const tt = createOfficialRayongTimetable(ds);
-  const packed = encodePlacements(tt.placements, ds);
+  const packed = encodePlacements(tt.placements);
 
   // 1. หมวดข้อมูลสถานศึกษา -> schools/school-info
   console.log("-> สร้าง Document: schools/school-info");

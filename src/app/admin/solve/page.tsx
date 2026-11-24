@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { MiniLineChart } from "@/components/charts/mini-line-chart";
 import { CompareRunner } from "@/components/solver/compare-runner";
 import { ResultPanel } from "@/components/solver/result-panel";
-import { Alert, Badge, Button, Card, Field, Input, PageHeader, Select } from "@/components/ui";
+import { Alert, Badge, Button, Card, Field, Input, PageHeader } from "@/components/ui";
 import { DEFAULT_GA, DEFAULT_WEIGHTS, SOFT_KEYS, SOFT_LABEL, precheck, type Algorithm, type Weights } from "@/engine";
 import { newId } from "@/lib/id";
 import { useSolver } from "@/lib/solver/use-solver";

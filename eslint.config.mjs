@@ -1,10 +1,22 @@
-import nextVitals from "eslint-config-next/core-web-vitals";
+﻿import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 
 const config = [
   ...nextVitals,
   ...nextTs,
-  { ignores: [".next/**", ".open-next/**", ".wrangler/**", "node_modules/**", "coverage/**", "next-env.d.ts", "netlify/**"] },
+  {
+    ignores: [
+      ".next/**",
+      ".open-next/**",
+      ".wrangler/**",
+      "node_modules/**",
+      "coverage/**",
+      "next-env.d.ts",
+      "netlify/**",
+      ".chrome-temp/**",
+      "scripts/**"
+    ]
+  },
   {
     // Engine ต้องเป็น TypeScript บริสุทธิ์: ห้ามพึ่ง UI / Firebase / Next
     files: ["src/engine/**/*.ts"],

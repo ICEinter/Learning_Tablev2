@@ -4,7 +4,7 @@
  * และบันทึก Metadata ลงคอลเลกชัน "storage_files" ภายใต้ School Doc ใน Firestore
  */
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { collection, doc, setDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, setDoc, getDocs } from "firebase/firestore";
 import { getClientStorage, getClientDb } from "./client";
 import { isFirebaseConfigured, getSchoolId } from "./config";
 
@@ -43,7 +43,7 @@ export async function uploadToFirebaseStorage(params: {
 
   // กรณี Offline หรือไม่มี Firebase Config ให้จำลองเป็น Local Object URL
   if (!isFirebaseConfigured()) {
-    const blob = params.file instanceof Blob ? params.file : new Blob([params.file as any]);
+    const blob = params.file instanceof Blob ? params.file : new Blob([params.file as BlobPart]);
     const mockUrl = typeof window !== "undefined" ? URL.createObjectURL(blob) : `mock://${cleanName}`;
     const mockRecord: StoredFileRecord = {
       id: fileId,
@@ -64,7 +64,7 @@ export async function uploadToFirebaseStorage(params: {
   }
 
   // อัปโหลดเข้า Firebase Storage จริง (หาก Bucket เปิดใช้งาน)
-  const blob = params.file instanceof Blob ? params.file : new Blob([params.file as any]);
+  const blob = params.file instanceof Blob ? params.file : new Blob([params.file as BlobPart]);
   let downloadUrl = "";
 
   try {
@@ -130,7 +130,7 @@ export async function listStoredFiles(category?: StoredFileRecord["category"]): 
       return files.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     }
     return getLocalFilesMetadata(category);
-  } catch (err) {
+  } catch {
     return getLocalFilesMetadata(category);
   }
 }

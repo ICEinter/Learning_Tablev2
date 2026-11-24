@@ -150,7 +150,7 @@ describe("Admin ถูกตั้งค่า (emulator host ปลอม) แ�
       breakdown: { teacherGaps: 2, studentGaps: 1 },
       explanations: ["ตารางผ่านเกณฑ์"],
     });
-    const res = await advisorRoute(req as any);
+    const res = await advisorRoute(req as unknown as import("next/server").NextRequest);
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.source).toBe("rule-based");

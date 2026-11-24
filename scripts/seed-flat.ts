@@ -12,12 +12,12 @@ const cfg = {
 async function seedFlat() {
   console.log("=== กำลังบันทึกข้อมูลแบบรวมใน Document เดียว (ไม่มี Sub-collection) ===");
   const app = initializeApp(cfg, "seeder-flat");
-  const db = initializeFirestore(app, {});
+  const db = initializeFirestore(app, {}, 'test-db');
 
   const ds = createRayongDataset();
   const tt = createOfficialRayongTimetable(ds);
   const schoolId = "school-main";
-  const packed = encodePlacements(tt.placements, ds);
+  const packed = encodePlacements(tt.placements);
 
   // รวมทุกอย่างไว้ใน Document 'schools/school-main' โดยตรง
   const schoolDocData = {

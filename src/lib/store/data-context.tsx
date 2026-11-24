@@ -5,7 +5,6 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { validate } from "@/engine";
-import { createMockDataset } from "@/data/mock";
 import { createRayongDataset, createOfficialRayongTimetable } from "@/data/rayong";
 import { isDemoSession } from "@/lib/auth/demo-session";
 import { useSession } from "@/lib/auth/session-context";
@@ -66,10 +65,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!sessionReady) return;
     let alive = true;
-    setReady(false);
-    setError(null);
+    // setReady(false)
+    // setError(null);
     repoRef.current = null;
-    setMode(isFirebaseConfigured() && session && !isDemoSession(session) ? "firebase" : "local");
     (async () => {
       try {
         const repo = await createRepository(session);

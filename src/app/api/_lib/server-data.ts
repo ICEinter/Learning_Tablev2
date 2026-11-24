@@ -52,8 +52,8 @@ export async function loadServerDataset(db: Firestore, schoolId: string): Promis
     school: {
       id: schoolId,
       name: school.name,
-      departmentCode: (school as any).departmentCode ?? "901",
-      departmentName: (school as any).departmentName ?? "เทคโนโลยีสารสนเทศและการสื่อสาร",
+      departmentCode: (school as SchoolDoc & { departmentCode?: string }).departmentCode ?? "901",
+      departmentName: (school as SchoolDoc & { departmentName?: string }).departmentName ?? "เทคโนโลยีสารสนเทศและการสื่อสาร",
       regularEndTime: school.regularEndTime,
       signatories: school.signatories ?? [],
     },
