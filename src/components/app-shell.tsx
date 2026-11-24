@@ -10,33 +10,33 @@ import { Badge, Button, Spinner, cx } from "./ui";
 
 export const NAV: Record<Role, { href: string; label: string; icon: IconName }[]> = {
   admin: [
-    { href: "/admin", label: "à¹à¸”à¸Šà¸šà¸­à¸£à¹Œà¸”", icon: "dashboard" },
-    { href: "/admin/setup", label: "à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²à¸›à¸µ/à¸ à¸²à¸„/à¹€à¸§à¸¥à¸²", icon: "settings" },
-    { href: "/admin/data", label: "à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸«à¸¥à¸±à¸", icon: "database" },
-    { href: "/admin/import", label: "à¸™à¸³à¹€à¸‚à¹‰à¸²à¸‚à¹‰à¸­à¸¡à¸¹à¸¥", icon: "upload" },
-    { href: "/admin/solve", label: "à¸ˆà¸±à¸”à¸•à¸²à¸£à¸²à¸‡à¸­à¸±à¸•à¹‚à¸™à¸¡à¸±à¸•à¸´", icon: "spark" },
-    { href: "/admin/timetables", label: "à¸•à¸²à¸£à¸²à¸‡à¹€à¸£à¸µà¸¢à¸™/à¸ªà¸­à¸™", icon: "calendar" },
-    { href: "/admin/reports", label: "à¸£à¸²à¸¢à¸‡à¸²à¸™", icon: "report" },
-    { href: "/admin/users", label: "à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰à¹à¸¥à¸°à¸ªà¸´à¸—à¸˜à¸´à¹Œ", icon: "users" },
-    { href: "/admin/help", label: "à¸§à¸´à¸˜à¸µà¹ƒà¸Šà¹‰à¸‡à¸²à¸™", icon: "help" },
+    { href: "/admin", label: "แดชบอร์ด", icon: "dashboard" },
+    { href: "/admin/setup", label: "ตั้งค่าปี/ภาค/เวลา", icon: "settings" },
+    { href: "/admin/data", label: "ข้อมูลหลัก", icon: "database" },
+    { href: "/admin/import", label: "นำเข้าข้อมูล", icon: "upload" },
+    { href: "/admin/solve", label: "จัดตารางอัตโนมัติ", icon: "spark" },
+    { href: "/admin/timetables", label: "ตารางเรียน/สอน", icon: "calendar" },
+    { href: "/admin/reports", label: "รายงาน", icon: "report" },
+    { href: "/admin/users", label: "ผู้ใช้และสิทธิ์", icon: "users" },
+    { href: "/admin/help", label: "วิธีใช้งาน", icon: "help" },
   ],
   teacher: [
-    { href: "/teacher", label: "à¸•à¸²à¸£à¸²à¸‡à¸ªà¸­à¸™à¸‚à¸­à¸‡à¸‰à¸±à¸™", icon: "calendar" },
-    { href: "/teacher/help", label: "à¸§à¸´à¸˜à¸µà¹ƒà¸Šà¹‰à¸‡à¸²à¸™", icon: "help" },
+    { href: "/teacher", label: "ตารางสอนของฉัน", icon: "calendar" },
+    { href: "/teacher/help", label: "วิธีใช้งาน", icon: "help" },
   ],
   student: [
-    { href: "/student", label: "à¸•à¸²à¸£à¸²à¸‡à¹€à¸£à¸µà¸¢à¸™à¸‚à¸­à¸‡à¸‰à¸±à¸™", icon: "calendar" },
-    { href: "/student/help", label: "à¸§à¸´à¸˜à¸µà¹ƒà¸Šà¹‰à¸‡à¸²à¸™", icon: "help" },
+    { href: "/student", label: "ตารางเรียนของฉัน", icon: "calendar" },
+    { href: "/student/help", label: "วิธีใช้งาน", icon: "help" },
   ],
 };
 
 const ROLE_LABEL: Record<Role, string> = {
-  admin: "à¸œà¸¹à¹‰à¸”à¸¹à¹à¸¥à¸£à¸°à¸šà¸š",
-  teacher: "à¸„à¸£à¸¹à¸œà¸¹à¹‰à¸ªà¸­à¸™",
-  student: "à¸™à¸±à¸à¹€à¸£à¸µà¸¢à¸™/à¸™à¸±à¸à¸¨à¸¶à¸à¸©à¸²",
+  admin: "ผู้ดูแลระบบ",
+  teacher: "ครูผู้สอน",
+  student: "นักเรียน/นักศึกษา",
 };
 
-/** à¸›à¹‰à¸­à¸‡à¸à¸±à¸™à¸«à¸™à¹‰à¸²à¸•à¸²à¸¡à¸šà¸—à¸šà¸²à¸— (à¸à¸±à¹ˆà¸‡ UI) â€” à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸ˆà¸£à¸´à¸‡à¸›à¹‰à¸­à¸‡à¸à¸±à¸™à¸”à¹‰à¸§à¸¢ Security Rules à¹à¸¥à¸° API à¸à¸±à¹ˆà¸‡ server */
+/** ป้องกันหน้าตามบทบาท (ฝั่ง UI) — ข้อมูลจริงป้องกันด้วย Security Rules และ API ฝั่ง server */
 export function RequireRole({ roles, children }: { roles: Role[]; children: ReactNode }) {
   const { ready, session } = useSession();
   const router = useRouter();
@@ -55,10 +55,10 @@ export function RequireRole({ roles, children }: { roles: Role[]; children: Reac
   if (!roles.includes(session.role))
     return (
       <div className="mx-auto max-w-md p-8 text-center">
-        <p className="font-semibold text-lg text-ink">à¹„à¸¡à¹ˆà¸¡à¸µà¸ªà¸´à¸—à¸˜à¸´à¹Œà¹€à¸‚à¹‰à¸²à¸–à¸¶à¸‡à¸«à¸™à¹‰à¸²à¸™à¸µà¹‰</p>
-        <p className="mt-2 text-sm text-muted">à¸šà¸—à¸šà¸²à¸—à¸‚à¸­à¸‡à¸„à¸¸à¸“à¸„à¸·à¸­ {ROLE_LABEL[session.role]}</p>
+        <p className="font-semibold text-lg text-ink">ไม่มีสิทธิ์เข้าถึงหน้านี้</p>
+        <p className="mt-2 text-sm text-muted">บทบาทของคุณคือ {ROLE_LABEL[session.role]}</p>
         <Link className="mt-4 inline-block text-accent underline font-medium" href={NAV[session.role][0].href}>
-          à¹„à¸›à¸«à¸™à¹‰à¸²à¸«à¸¥à¸±à¸à¸‚à¸­à¸‡à¸‰à¸±à¸™
+          ไปหน้าหลักของฉัน
         </Link>
       </div>
     );
@@ -68,7 +68,7 @@ export function RequireRole({ roles, children }: { roles: Role[]; children: Reac
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { session, signOut, mode: authMode } = useSession();
-  const { dataset, ready, error, timetables } = useData();
+  const { dataset, mode, ready, error, timetables } = useData();
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -77,12 +77,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const nav = session ? NAV[session.role] : [];
 
   const publishedTimetable = timetables.find((t) => t.status === "published");
-  const firebaseDataBlocked = Boolean(error && authMode === "firebase");
-
-  const leaveFirebaseForDemo = async () => {
-    await signOut();
-    router.replace("/admin");
-  };
 
   return (
     <div className="min-h-screen bg-page flex flex-col pb-16 lg:pb-0">
@@ -91,7 +85,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4">
           <button
             className="rounded-lg p-2 text-muted hover:bg-page hover:text-ink lg:hidden transition-colors"
-            aria-label="à¹€à¸›à¸´à¸”à¹€à¸¡à¸™à¸¹"
+            aria-label="เปิดเมนู"
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
           >
@@ -108,12 +102,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
 
           <div className="hidden min-w-0 flex-1 truncate text-xs text-muted md:block pl-2 border-l border-line ml-1">
-            <span className="font-medium text-ink">{dataset.school.name || "à¸ªà¸–à¸²à¸™à¸¨à¸¶à¸à¸©à¸²"}</span> Â· à¸ à¸²à¸„à¹€à¸£à¸µà¸¢à¸™ {dataset.term.term}/{dataset.term.year}
+            <span className="font-medium text-ink">{dataset.school.name || "สถานศึกษา"}</span> · ภาคเรียน {dataset.term.term}/{dataset.term.year}
           </div>
 
           <div className="ml-auto flex items-center gap-2">
-            <Badge tone={authMode === "firebase" ? "ok" : "warn"}>
-              {authMode === "firebase" ? "Firebase Cloud" : "à¹‚à¸«à¸¡à¸”à¸ªà¸²à¸˜à¸´à¸• (Demo)"}
+            <Badge tone={mode === "firebase" ? "ok" : "warn"}>
+              {mode === "firebase" ? "Firebase Cloud" : "โหมดสาธิต (Demo)"}
             </Badge>
 
             {/* Notification Bell */}
@@ -122,7 +116,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 type="button"
                 onClick={() => setNotifOpen((v) => !v)}
                 className="relative rounded-lg p-2 text-muted hover:bg-page hover:text-ink transition-colors"
-                title="à¸à¸²à¸£à¹à¸ˆà¹‰à¸‡à¹€à¸•à¸·à¸­à¸™"
+                title="การแจ้งเตือน"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -136,18 +130,18 @@ export function AppShell({ children }: { children: ReactNode }) {
               {notifOpen && (
                 <div className="absolute right-0 mt-2 w-72 rounded-xl border border-line bg-surface p-4 shadow-lg z-50">
                   <div className="flex items-center justify-between pb-2 border-b border-line mb-3">
-                    <span className="text-xs font-bold text-ink">à¸à¸²à¸£à¹à¸ˆà¹‰à¸‡à¹€à¸•à¸·à¸­à¸™</span>
-                    <button onClick={() => setNotifOpen(false)} className="text-muted hover:text-ink text-xs">à¸›à¸´à¸”</button>
+                    <span className="text-xs font-bold text-ink">การแจ้งเตือน</span>
+                    <button onClick={() => setNotifOpen(false)} className="text-muted hover:text-ink text-xs">ปิด</button>
                   </div>
                   {publishedTimetable ? (
                     <div className="rounded-lg bg-ok-soft p-2.5 text-xs text-ok">
-                      <p className="font-semibold">à¸•à¸²à¸£à¸²à¸‡à¹€à¸£à¸µà¸¢à¸™/à¸ªà¸­à¸™à¸‰à¸šà¸±à¸šà¹€à¸œà¸¢à¹à¸žà¸£à¹ˆ</p>
+                      <p className="font-semibold">ตารางเรียน/สอนฉบับเผยแพร่</p>
                       <p className="text-[11px] mt-0.5 text-muted">
-                        à¹€à¸§à¸­à¸£à¹Œà¸Šà¸±à¸™ {publishedTimetable.label} à¹€à¸œà¸¢à¹à¸žà¸£à¹ˆà¹à¸¥à¹‰à¸§ à¸„à¸£à¸¹à¹à¸¥à¸°à¸™à¸±à¸à¹€à¸£à¸µà¸¢à¸™à¸ªà¸²à¸¡à¸²à¸£à¸–à¸”à¸¹à¸•à¸²à¸£à¸²à¸‡à¹„à¸”à¹‰
+                        เวอร์ชัน {publishedTimetable.label} เผยแพร่แล้ว ครูและนักเรียนสามารถดูตารางได้
                       </p>
                     </div>
                   ) : (
-                    <p className="text-xs text-muted text-center py-2">à¹„à¸¡à¹ˆà¸¡à¸µà¸à¸²à¸£à¹à¸ˆà¹‰à¸‡à¹€à¸•à¸·à¸­à¸™à¹ƒà¸«à¸¡à¹ˆ</p>
+                    <p className="text-xs text-muted text-center py-2">ไม่มีการแจ้งเตือนใหม่</p>
                   )}
                 </div>
               )}
@@ -175,10 +169,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                     await signOut();
                     router.replace("/");
                   }}
-                  title="à¸­à¸­à¸à¸ˆà¸²à¸à¸£à¸°à¸šà¸š"
+                  title="ออกจากระบบ"
                 >
                   <Icon name="logout" size={16} />
-                  <span className="hidden md:inline">à¸­à¸­à¸à¸ˆà¸²à¸à¸£à¸°à¸šà¸š</span>
+                  <span className="hidden md:inline">ออกจากระบบ</span>
                 </Button>
               </div>
             )}
@@ -190,7 +184,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="mx-auto flex w-full max-w-[1600px] flex-1">
         {/* Desktop Sidebar */}
         <nav
-          aria-label="à¹€à¸¡à¸™à¸¹à¸«à¸¥à¸±à¸"
+          aria-label="เมนูหลัก"
           className={cx(
             "no-print fixed inset-y-14 left-0 z-30 w-64 shrink-0 border-r border-line bg-surface p-3 transition-transform lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:translate-x-0 overflow-y-auto",
             open ? "translate-x-0 shadow-xl" : "-translate-x-full",
@@ -198,7 +192,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           <div className="mb-3 px-3 py-2 rounded-lg bg-page/70 text-xs">
             <span className="block font-semibold text-ink">{dataset.school.name}</span>
-            <span className="block text-[11px] text-muted">à¸šà¸—à¸šà¸²à¸—: {session ? ROLE_LABEL[session.role] : "à¸—à¸±à¹ˆà¸§à¹„à¸›"}</span>
+            <span className="block text-[11px] text-muted">บทบาท: {session ? ROLE_LABEL[session.role] : "ทั่วไป"}</span>
           </div>
 
           <ul className="flex flex-col gap-1">
@@ -231,7 +225,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               href="/"
               className="flex items-center gap-2 text-xs text-muted hover:text-accent transition-colors"
             >
-              <span>â† à¹„à¸›à¸«à¸™à¹‰à¸²à¹à¸£à¸ (Landing Page)</span>
+              <span>← ไปหน้าแรก (Landing Page)</span>
             </Link>
           </div>
         </nav>
@@ -246,41 +240,22 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Content Area */}
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-8">
           {error && (
-            <div className="mb-5 rounded-xl border border-danger/30 bg-danger-soft p-4 text-sm text-danger shadow-2xs">
-              <div className="flex items-start gap-2">
-                <Icon name="shield" size={18} className="mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-semibold">
-                    {authMode === "firebase" ? "à¸šà¸±à¸à¸Šà¸µ Firebase à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸ªà¸´à¸—à¸˜à¸´à¹Œà¹€à¸‚à¹‰à¸²à¸–à¸¶à¸‡à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¹‚à¸£à¸‡à¹€à¸£à¸µà¸¢à¸™" : "à¹€à¸à¸´à¸”à¸‚à¹‰à¸­à¸œà¸´à¸”à¸žà¸¥à¸²à¸”à¹ƒà¸™à¸à¸²à¸£à¹‚à¸«à¸¥à¸”à¸‚à¹‰à¸­à¸¡à¸¹à¸¥"}
-                  </p>
-                  <p className="text-xs mt-0.5">{error}</p>
-                  {authMode === "firebase" && (
-                    <p className="mt-2 text-xs">
-                      à¹ƒà¸«à¹‰à¸œà¸¹à¹‰à¸”à¸¹à¹à¸¥à¸£à¸°à¸šà¸šà¸•à¸£à¸§à¸ˆà¸ªà¸´à¸—à¸˜à¸´à¹Œ Firebase à¸‚à¸­à¸‡à¸šà¸±à¸à¸Šà¸µ (custom claims: schoolId à¹à¸¥à¸° role) à¹à¸¥à¸°à¸à¸²à¸£à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸² Firebase Admin à¸šà¸™ Cloudflare
-                    </p>
-                  )}
-                </div>
+            <div className="mb-5 rounded-xl border border-danger/30 bg-danger-soft p-4 text-sm text-danger flex items-start gap-2 shadow-2xs">
+              <Icon name="shield" size={18} className="mt-0.5 shrink-0" />
+              <div>
+                <p className="font-semibold">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>
+                <p className="text-xs mt-0.5">{error}</p>
               </div>
-              {authMode === "firebase" && (
-                <div className="mt-3 flex flex-wrap gap-2 pl-6">
-                  <Button variant="secondary" onClick={() => void leaveFirebaseForDemo()}>
-                    à¸­à¸­à¸à¸ˆà¸²à¸à¸šà¸±à¸à¸Šà¸µà¹à¸¥à¹‰à¸§à¸—à¸”à¸¥à¸­à¸‡ Demo
-                  </Button>
-                  <Button variant="secondary" onClick={() => void signOut()}>
-                    à¸­à¸­à¸à¸ˆà¸²à¸à¸£à¸°à¸šà¸š
-                  </Button>
-                </div>
-              )}
             </div>
           )}
-          {ready && !firebaseDataBlocked ? (
+          {ready ? (
             children
-          ) : !ready ? (
+          ) : (
             <div className="flex flex-col items-center justify-center py-24 text-muted gap-3">
               <Spinner />
-              <p className="text-sm">à¸à¸³à¸¥à¸±à¸‡à¹‚à¸«à¸¥à¸”à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸£à¸°à¸šà¸š...</p>
+              <p className="text-sm">กำลังโหลดข้อมูลระบบ...</p>
             </div>
-          ) : null}
+          )}
         </main>
       </div>
 
@@ -310,7 +285,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             className="flex flex-col items-center py-1 px-2 rounded-lg text-[10px] font-medium text-muted hover:text-ink"
           >
             <Icon name="user" size={20} />
-            <span>à¹‚à¸›à¸£à¹„à¸Ÿà¸¥à¹Œ</span>
+            <span>โปรไฟล์</span>
           </button>
         </div>
       )}
@@ -320,13 +295,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <div className="w-full max-w-sm rounded-2xl bg-surface p-6 shadow-xl border border-line">
             <div className="flex items-center justify-between pb-3 border-b border-line mb-4">
-              <h3 className="text-base font-bold text-ink">à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸œà¸¹à¹‰à¹ƒà¸Šà¹‰à¸‡à¸²à¸™</h3>
+              <h3 className="text-base font-bold text-ink">ข้อมูลผู้ใช้งาน</h3>
               <button
                 type="button"
                 onClick={() => setProfileModal(false)}
                 className="text-muted hover:text-ink text-sm p-1"
               >
-                âœ•
+                ✕
               </button>
             </div>
 
@@ -342,32 +317,32 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             <div className="flex flex-col gap-2 rounded-xl bg-page p-3 text-xs mb-5 border border-line">
               <div className="flex justify-between">
-                <span className="text-muted">à¸£à¸«à¸±à¸ªà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰ (UID):</span>
+                <span className="text-muted">รหัสผู้ใช้ (UID):</span>
                 <span className="font-mono text-ink truncate max-w-[160px]">{session.uid}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">à¸ªà¸–à¸²à¸™à¸¨à¸¶à¸à¸©à¸²:</span>
+                <span className="text-muted">สถานศึกษา:</span>
                 <span className="font-medium text-ink">{dataset.school.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted">à¹‚à¸«à¸¡à¸”à¸à¸²à¸£à¸—à¸³à¸‡à¸²à¸™:</span>
-                <span className="font-medium text-ink">{authMode === "firebase" ? "Firebase Authentication" : "à¸ªà¸²à¸˜à¸´à¸• (Demo)"}</span>
+                <span className="text-muted">โหมดการทำงาน:</span>
+                <span className="font-medium text-ink">{authMode === "firebase" ? "Firebase Authentication" : "สาธิต (Demo)"}</span>
               </div>
             </div>
 
             <div className="flex gap-2 justify-end">
               <Button variant="secondary" onClick={() => setProfileModal(false)}>
-                à¸›à¸´à¸”à¸«à¸™à¹‰à¸²à¸•à¹ˆà¸²à¸‡
+                ปิดหน้าต่าง
               </Button>
               <Button
                 variant="danger"
                 onClick={async () => {
                   setProfileModal(false);
                   await signOut();
-                  router.replace("/");
+                  router.replace("/login");
                 }}
               >
-                à¸­à¸­à¸à¸ˆà¸²à¸à¸£à¸°à¸šà¸š
+                ออกจากระบบ
               </Button>
             </div>
           </div>
