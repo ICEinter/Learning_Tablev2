@@ -12,7 +12,7 @@ export interface AIAdvisorRequest {
 }
 
 export interface AIAdvisorResponse {
-  source: "gemini" | "rule-based";
+  source: "openrouter" | "rule-based";
   executiveSummary: string;
   strengths: string[];
   recommendations: string[];
@@ -22,10 +22,10 @@ export interface AIAdvisorResponse {
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as AIAdvisorRequest;
-    const apiKey = process.env.GEMINI_API_KEY;
-    const model = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    const model = process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini";
 
-    // 1. ถ้ามี API Key ให้เรียก Gemini API
+    // 1. ถ้ามี API Key ให้เรียก OpenRouter API
     if (apiKey && apiKey.trim() !== "") {
       try {
         const prompt = `
@@ -55,26 +55,27 @@ ${body.explanations?.join("\n") ?? "ไม่มี"}
 }
 `;
 
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-        const res = await fetch(geminiUrl, {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.2,
-              responseMimeType: "application/json",
-            },
+            model,
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.2,
+            response_format: { type: "json_object" },
           }),
         });
 
         if (res.ok) {
           const data = await res.json();
-          const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          const rawText = data.choices?.[0]?.message?.content;
           if (rawText) {
             const parsed = JSON.parse(rawText);
             return NextResponse.json<AIAdvisorResponse>({
-              source: "gemini",
+              source: "openrouter",
               executiveSummary: parsed.executiveSummary || "ตารางสอนผ่านเกณฑ์มาตรฐานการจัดเวลาเรียน",
               strengths: parsed.strengths || ["ไม่มีการละเมิดเงื่อนไขบังคับ", "จัดคาบต่อเนื่องได้ครบถ้วน"],
               recommendations: parsed.recommendations || ["สามารถนำไปใช้เป็นตารางสอนทางการได้"],
@@ -83,7 +84,7 @@ ${body.explanations?.join("\n") ?? "ไม่มี"}
           }
         }
       } catch (geminiErr) {
-        console.warn("Gemini API call failed, falling back to rule-based analysis:", geminiErr);
+        console.warn("OpenRouter API call failed, falling back to rule-based analysis:", geminiErr);
       }
     }
 

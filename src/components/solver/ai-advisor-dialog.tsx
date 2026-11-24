@@ -60,8 +60,8 @@ export function AIAdvisorDialog({
               <h2 className="font-semibold text-base text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 AI Scheduling Copilot & Advisor
                 {data && (
-                  <Badge tone={data.source === "gemini" ? "ok" : "warn"}>
-                    {data.source === "gemini" ? "✨ ขับเคลื่อนด้วย Gemini API" : "⚙️ In-Engine Rule-based"}
+                  <Badge tone={data.source === "openrouter" ? "ok" : "warn"}>
+                    {data.source === "openrouter" ? "✨ ขับเคลื่อนด้วย OpenRouter" : "⚙️ In-Engine Rule-based"}
                   </Badge>
                 )}
               </h2>
