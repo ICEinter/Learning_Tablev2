@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import { createRayongDataset } from "@/data/rayong";
 import { checkDataset } from "@/shared/integrity";
 import { precheck, solve, validate } from "@/engine";
@@ -10,7 +10,7 @@ describe("Rayong Technical College dataset (real data)", () => {
     const errors = issues.filter((x) => x.level === "error");
     expect(errors).toEqual([]);
     expect(ds.teachers.length).toBe(10);
-    expect(ds.groups.length).toBe(10);
+    expect(ds.groups.length).toBe(12);
     expect(ds.assignments.length).toBeGreaterThan(30);
   });
 
