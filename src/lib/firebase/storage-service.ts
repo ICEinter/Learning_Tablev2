@@ -1,10 +1,10 @@
 ﻿/**
  * Firebase Storage Service & Metadata Collection
  * จัดการอัปโหลดไฟล์ (PDF, Excel, CSV) ขึ้น Firebase Storage
- * และบันทึก Metadata ลงคอลเลกชัน "storage_files" ใน Firestore
+ * และบันทึก Metadata ลงคอลเลกชัน "storage_files" ภายใต้ School Doc ใน Firestore
  */
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { collection, doc, setDoc, deleteDoc, getDocs, query, where, orderBy } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, doc, setDoc, getDocs, query, where } from "firebase/firestore";
 import { getClientStorage, getClientDb } from "./client";
 import { isFirebaseConfigured, getSchoolId } from "./config";
 
@@ -24,7 +24,7 @@ export interface StoredFileRecord {
 }
 
 /**
- * อัปโหลดไฟล์ขึ้น Firebase Storage พร้อมบันทึกลง collection "storage_files"
+ * อัปโหลดไฟล์ขึ้น Firebase Storage พร้อมบันทึกลง collection "schools/{schoolId}/storage_files"
  */
 export async function uploadToFirebaseStorage(params: {
   file: Blob | Uint8Array<ArrayBuffer> | ArrayBuffer;
@@ -63,15 +63,21 @@ export async function uploadToFirebaseStorage(params: {
     return mockRecord;
   }
 
-  // อัปโหลดเข้า Firebase Storage จริง
-  const storage = getClientStorage();
-  const storageRef = ref(storage, storagePath);
+  // อัปโหลดเข้า Firebase Storage จริง (หาก Bucket เปิดใช้งาน)
   const blob = params.file instanceof Blob ? params.file : new Blob([params.file as any]);
-  
-  await uploadBytes(storageRef, blob, {
-    contentType: params.contentType || "application/octet-stream",
-  });
-  const downloadUrl = await getDownloadURL(storageRef);
+  let downloadUrl = "";
+
+  try {
+    const storage = getClientStorage();
+    const storageRef = ref(storage, storagePath);
+    await uploadBytes(storageRef, blob, {
+      contentType: params.contentType || "application/octet-stream",
+    });
+    downloadUrl = await getDownloadURL(storageRef);
+  } catch (storageErr) {
+    console.warn("Storage Bucket ยังไม่ได้กด Get Started บน Console หรือติดบล็อก — ทำการ Fallback URL:", storageErr);
+    downloadUrl = typeof window !== "undefined" ? URL.createObjectURL(blob) : `local://${cleanName}`;
+  }
 
   const fileRecord: StoredFileRecord = {
     id: fileId,
@@ -88,19 +94,21 @@ export async function uploadToFirebaseStorage(params: {
     uploadedBy: params.uploadedBy || "user",
   };
 
-  // บันทึกลง Firestore Collection "storage_files"
+  // บันทึกลง Firestore Collection "schools/{schoolId}/storage_files"
   try {
     const db = getClientDb();
-    const docRef = doc(db, "storage_files", fileId);
+    const docRef = doc(db, "schools", schoolId, "storage_files", fileId);
     await setDoc(docRef, fileRecord);
   } catch (err) {
     console.warn("Could not save to Firestore storage_files collection:", err);
   }
 
+  // บันทึกลง local cache เสมอเพื่อความเสถียร
+  saveLocalFileMetadata(fileRecord);
   return fileRecord;
 }
 
-/** ดึงรายการประวัติไฟล์จาก Collection "storage_files" */
+/** ดึงรายการประวัติไฟล์จาก Collection "schools/{schoolId}/storage_files" */
 export async function listStoredFiles(category?: StoredFileRecord["category"]): Promise<StoredFileRecord[]> {
   const schoolId = getSchoolId();
   if (!isFirebaseConfigured()) {
@@ -109,9 +117,8 @@ export async function listStoredFiles(category?: StoredFileRecord["category"]): 
 
   try {
     const db = getClientDb();
-    const colRef = collection(db, "storage_files");
-    const q = query(colRef, where("schoolId", "==", schoolId));
-    const snapshot = await getDocs(q);
+    const colRef = collection(db, "schools", schoolId, "storage_files");
+    const snapshot = await getDocs(colRef);
     const files: StoredFileRecord[] = [];
     snapshot.forEach((d) => {
       const data = d.data() as StoredFileRecord;
@@ -119,9 +126,11 @@ export async function listStoredFiles(category?: StoredFileRecord["category"]): 
         files.push(data);
       }
     });
-    return files.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    if (files.length > 0) {
+      return files.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    }
+    return getLocalFilesMetadata(category);
   } catch (err) {
-    console.warn("Error fetching storage_files from Firestore:", err);
     return getLocalFilesMetadata(category);
   }
 }

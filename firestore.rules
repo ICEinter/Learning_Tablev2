@@ -1,8 +1,8 @@
-rules_version = '2';
-// Firestore Security Rules — ระบบจัดตารางการเรียนการสอน
-// หลักการ: deny-by-default, ทุก path ผูก schoolId กับ custom claims,
-// ตาราง/views/jobs/imports/audit/users เขียนได้เฉพาะ server (Admin SDK ข้าม rules)
-// ทดสอบ: tests/rules/firestore.rules.test.ts (รันด้วย Emulator ใน CI)
+﻿rules_version = '2';
+// Firestore Security Rules â€” à¸£à¸°à¸šà¸šà¸ˆà¸±à¸”à¸•à¸²à¸£à¸²à¸‡à¸à¸²à¸£à¹€à¸£à¸µà¸¢à¸™à¸à¸²à¸£à¸ªà¸­à¸™
+// à¸«à¸¥à¸±à¸à¸à¸²à¸£: deny-by-default, à¸—à¸¸à¸ path à¸œà¸¹à¸ schoolId à¸à¸±à¸š custom claims,
+// à¸•à¸²à¸£à¸²à¸‡/views/jobs/imports/audit/users à¹€à¸‚à¸µà¸¢à¸™à¹„à¸”à¹‰à¹€à¸‰à¸žà¸²à¸° server (Admin SDK à¸‚à¹‰à¸²à¸¡ rules)
+// à¸—à¸”à¸ªà¸­à¸š: tests/rules/firestore.rules.test.ts (à¸£à¸±à¸™à¸”à¹‰à¸§à¸¢ Emulator à¹ƒà¸™ CI)
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -18,20 +18,25 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/schools/$(s)/terms/$(t)/timetables/$(v)).data.status;
     }
 
-    // โปรไฟล์ผู้ใช้ — เขียนโดย server เท่านั้น
+    // à¹‚à¸›à¸£à¹„à¸Ÿà¸¥à¹Œà¸œà¸¹à¹‰à¹ƒà¸Šà¹‰ â€” à¹€à¸‚à¸µà¸¢à¸™à¹‚à¸”à¸¢ server à¹€à¸—à¹ˆà¸²à¸™à¸±à¹‰à¸™
     match /users/{uid} {
       allow read: if authed() && (request.auth.uid == uid || isAdmin(resource.data.schoolId));
       allow write: if false;
     }
 
     match /schools/{s} {
+      // คอลเลกชันจัดเก็บประวัติไฟล์ Firebase Storage
+      match /storage_files/{fileId} {
+        allow read: if isMember(s) || isAdmin(s);
+        allow write: if isAdmin(s);
+      }
       allow read: if isMember(s);
-      // admin แก้ข้อมูลสถานศึกษาได้เฉพาะฟิลด์ที่กำหนด; ลบไม่ได้
+      // admin à¹à¸à¹‰à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸ªà¸–à¸²à¸™à¸¨à¸¶à¸à¸©à¸²à¹„à¸”à¹‰à¹€à¸‰à¸žà¸²à¸°à¸Ÿà¸´à¸¥à¸”à¹Œà¸—à¸µà¹ˆà¸à¸³à¸«à¸™à¸”; à¸¥à¸šà¹„à¸¡à¹ˆà¹„à¸”à¹‰
       allow create, update: if isAdmin(s)
         && request.resource.data.keys().hasOnly(['name', 'regularEndTime', 'signatories', 'timezone', 'activeTermId']);
       allow delete: if false;
 
-      // นักเรียน (PII ขั้นต่ำ) — admin หรือเจ้าของข้อมูลเท่านั้น
+      // à¸™à¸±à¸à¹€à¸£à¸µà¸¢à¸™ (PII à¸‚à¸±à¹‰à¸™à¸•à¹ˆà¸³) â€” admin à¸«à¸£à¸·à¸­à¹€à¸ˆà¹‰à¸²à¸‚à¸­à¸‡à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¹€à¸—à¹ˆà¸²à¸™à¸±à¹‰à¸™
       match /students/{id} {
         allow read: if isAdmin(s) || (isStudent(s) && claim('studentId') == id);
         allow write: if isAdmin(s);
@@ -51,7 +56,7 @@ service cloud.firestore {
 
       match /terms/{t} {
         allow read: if isMember(s);
-        // publishedVersionId ตั้งได้เฉพาะ server ตอนเผยแพร่
+        // publishedVersionId à¸•à¸±à¹‰à¸‡à¹„à¸”à¹‰à¹€à¸‰à¸žà¸²à¸° server à¸•à¸­à¸™à¹€à¸œà¸¢à¹à¸žà¸£à¹ˆ
         allow create: if isAdmin(s)
           && request.resource.data.keys().hasOnly(['year', 'term', 'status', 'name', 'yearId', 'startDate', 'endDate']);
         allow update: if isAdmin(s)
@@ -63,7 +68,7 @@ service cloud.firestore {
           allow read: if isMember(s);
           allow write: if isAdmin(s);
         }
-        // ข้อมูลหลักที่ใช้แสดงตาราง: สมาชิกของสถานศึกษาอ่านได้, admin เขียน
+        // à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸«à¸¥à¸±à¸à¸—à¸µà¹ˆà¹ƒà¸Šà¹‰à¹à¸ªà¸”à¸‡à¸•à¸²à¸£à¸²à¸‡: à¸ªà¸¡à¸²à¸Šà¸´à¸à¸‚à¸­à¸‡à¸ªà¸–à¸²à¸™à¸¨à¸¶à¸à¸©à¸²à¸­à¹ˆà¸²à¸™à¹„à¸”à¹‰, admin à¹€à¸‚à¸µà¸¢à¸™
         match /courses/{id} {
           allow read: if isMember(s);
           allow write: if isAdmin(s);
@@ -84,7 +89,7 @@ service cloud.firestore {
           allow read: if isMember(s);
           allow write: if isAdmin(s);
         }
-        // assignments จำเป็นต่อการถอดรหัสตารางที่เผยแพร่ (ไม่มี PII)
+        // assignments à¸ˆà¸³à¹€à¸›à¹‡à¸™à¸•à¹ˆà¸­à¸à¸²à¸£à¸–à¸­à¸”à¸£à¸«à¸±à¸ªà¸•à¸²à¸£à¸²à¸‡à¸—à¸µà¹ˆà¹€à¸œà¸¢à¹à¸žà¸£à¹ˆ (à¹„à¸¡à¹ˆà¸¡à¸µ PII)
         match /assignments/{id} {
           allow read: if isMember(s);
           allow write: if isAdmin(s);
@@ -94,12 +99,12 @@ service cloud.firestore {
           allow write: if isAdmin(s);
         }
 
-        // ตาราง: admin อ่านทุกสถานะ; สมาชิกอื่นอ่านได้เฉพาะฉบับที่เผยแพร่ (ฉบับร่างมองไม่เห็น)
+        // à¸•à¸²à¸£à¸²à¸‡: admin à¸­à¹ˆà¸²à¸™à¸—à¸¸à¸à¸ªà¸–à¸²à¸™à¸°; à¸ªà¸¡à¸²à¸Šà¸´à¸à¸­à¸·à¹ˆà¸™à¸­à¹ˆà¸²à¸™à¹„à¸”à¹‰à¹€à¸‰à¸žà¸²à¸°à¸‰à¸šà¸±à¸šà¸—à¸µà¹ˆà¹€à¸œà¸¢à¹à¸žà¸£à¹ˆ (à¸‰à¸šà¸±à¸šà¸£à¹ˆà¸²à¸‡à¸¡à¸­à¸‡à¹„à¸¡à¹ˆà¹€à¸«à¹‡à¸™)
         match /timetables/{v} {
           allow read: if isAdmin(s) || (isMember(s) && resource.data.status == 'published');
           allow write: if false;
 
-          // views อ่านได้เมื่อเวอร์ชันแม่เผยแพร่แล้วเท่านั้น (เขียนก่อนเปลี่ยนสถานะได้โดยไม่รั่ว)
+          // views à¸­à¹ˆà¸²à¸™à¹„à¸”à¹‰à¹€à¸¡à¸·à¹ˆà¸­à¹€à¸§à¸­à¸£à¹Œà¸Šà¸±à¸™à¹à¸¡à¹ˆà¹€à¸œà¸¢à¹à¸žà¸£à¹ˆà¹à¸¥à¹‰à¸§à¹€à¸—à¹ˆà¸²à¸™à¸±à¹‰à¸™ (à¹€à¸‚à¸µà¸¢à¸™à¸à¹ˆà¸­à¸™à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™à¸ªà¸–à¸²à¸™à¸°à¹„à¸”à¹‰à¹‚à¸”à¸¢à¹„à¸¡à¹ˆà¸£à¸±à¹ˆà¸§)
           match /views/{viewId} {
             allow read: if isAdmin(s)
               || (isMember(s) && versionStatus(s, t, v) == 'published' && (
