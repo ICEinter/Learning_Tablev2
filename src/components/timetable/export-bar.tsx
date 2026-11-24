@@ -1,15 +1,15 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import type { TimetableGrid } from "@/lib/timetable/viewmodel";
 import { safeFileName } from "@/lib/timetable/overview";
 import type { SchoolInfo } from "@/shared/types";
 import { Button, useToast } from "@/components/ui";
+import { uploadToFirebaseStorage } from "@/lib/firebase/storage-service";
 
-type Action = "preview" | "pdf" | "pdfAll" | "xlsx" | "xlsxAll";
+type Action = "preview" | "pdf" | "pdfAll" | "xlsx" | "xlsxAll" | "cloudUpload";
 
 /**
- * แถบส่งออกตาราง: พรีวิว PDF / ดาวน์โหลด PDF / PDF ทั้งหมด / Excel / พิมพ์
- * โหลดโมดูล export แบบ dynamic import เมื่อกดเท่านั้น
+ * แถบส่งออกตาราง: พรีวิว PDF / ดาวน์โหลด PDF / PDF ทั้งหมด / Excel / อัปโหลดขึ้น Firebase Storage / พิมพ์
  */
 export function TimetableExportBar({
   school,
@@ -20,11 +20,8 @@ export function TimetableExportBar({
   allLabel = "ทั้งหมด",
 }: {
   school: SchoolInfo;
-  /** ตารางที่แสดงอยู่ */
   current: () => TimetableGrid | null;
-  /** ทุก entity ของมุมมองปัจจุบัน (ไม่ระบุ = ไม่มีปุ่ม "ทั้งหมด") */
   all?: () => TimetableGrid[];
-  /** ชื่อไฟล์ไม่รวมนามสกุล เช่น ตารางสอน-T05-2_2569 */
   fileBase: string;
   allFileBase?: string;
   allLabel?: string;
@@ -42,14 +39,28 @@ export function TimetableExportBar({
         return;
       }
       const base = safeFileName(many ? (allFileBase ?? `${fileBase}-ทั้งหมด`) : fileBase);
-      if (action === "xlsx" || action === "xlsxAll") {
+
+      if (action === "cloudUpload") {
+        const pdfModule = await import("@/lib/export/pdf");
+        const blob = await pdfModule.exportTimetablePdf(grids, { school, fileName: `${base}.pdf`, output: "blob" });
+        if (blob) {
+          const rec = await uploadToFirebaseStorage({
+            file: blob,
+            filename: `${base}.pdf`,
+            category: "timetable_pdf",
+            contentType: "application/pdf",
+          });
+          toast(`บันทึกลง Firebase Storage สำเร็จ (${rec.name})`, "ok");
+        }
+      } else if (action === "xlsx" || action === "xlsxAll") {
         const m = await import("@/lib/export/excel");
         await m.exportTimetableExcel(grids, { school, fileName: `${base}.xlsx`, download: true });
+        toast("ส่งออกไฟล์ Excel แล้ว", "ok");
       } else {
         const m = await import("@/lib/export/pdf");
         await m.exportTimetablePdf(grids, { school, fileName: `${base}.pdf`, output: action === "preview" ? "open" : "download" });
+        if (action !== "preview") toast("ส่งออกไฟล์ PDF แล้ว", "ok");
       }
-      if (action !== "preview") toast("ส่งออกไฟล์แล้ว", "ok");
     } catch (e) {
       toast(`ส่งออกไม่สำเร็จ: ${e instanceof Error ? e.message : String(e)}`, "danger");
     } finally {
@@ -78,6 +89,17 @@ export function TimetableExportBar({
           Excel {allLabel}
         </Button>
       )}
+      <Button
+        size="sm"
+        variant="secondary"
+        className="border-primary/40 bg-primary/10 text-primary hover:bg-primary/20"
+        loading={busy === "cloudUpload"}
+        disabled={busy !== null}
+        onClick={() => run("cloudUpload")}
+        title="อัปโหลดตารางขึ้น Firebase Cloud Storage และบันทึกประวัติลง collection storage_files"
+      >
+        ☁️ บันทึกลง Storage
+      </Button>
       <Button size="sm" variant="ghost" onClick={() => window.print()}>
         พิมพ์
       </Button>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Alert, Button, Card, PageHeader, useToast } from "@/components/ui";
@@ -16,7 +16,7 @@ import { StepIndicator } from "./_components/step-indicator";
 import { UploadStep } from "./_components/upload-step";
 
 export default function ImportPage() {
-  const { dataset, upsert } = useData();
+  const { dataset, upsert, loadRayongData, resetToMock } = useData();
   const toast = useToast();
   const [step, setStep] = useState(1);
   const [kind, setKind] = useState<ImportKind | null>(null);
@@ -24,10 +24,10 @@ export default function ImportPage() {
   const [sheet, setSheet] = useState<ParsedSheet | null>(null);
   const [mapping, setMapping] = useState<ColumnMapping>({});
   const [committing, setCommitting] = useState(false);
+  const [loadingPreset, setLoadingPreset] = useState(false);
   const [done, setDone] = useState<{ kind: ImportKind; count: number } | null>(null);
 
   const spec = kind ? IMPORT_SPECS[kind] : null;
-  // พรีวิวคำนวณจากข้อมูลปัจจุบัน (ตรวจรหัสซ้ำ/อ้างอิง) — ยังไม่บันทึกจนกว่าจะยืนยัน
   const preview = useMemo(
     () => (step >= 4 && kind && sheet ? buildImportPreview(kind, sheet, mapping, dataset) : null),
     [step, kind, sheet, mapping, dataset],
@@ -55,7 +55,6 @@ export default function ImportPage() {
 
   const commit = async () => {
     if (!kind || !preview) return;
-    // itemsToCommit คืนเฉพาะแถวที่ผ่านการตรวจ (ไม่รวมแถวผิดพลาด) และเป็น entity ของประเภท kind
     const items = itemsToCommit(preview) as EntityOf<EntityKind>[];
     if (items.length === 0) return;
     setCommitting(true);
@@ -70,13 +69,45 @@ export default function ImportPage() {
     }
   };
 
+  const handle1ClickRayong = async () => {
+    setLoadingPreset(true);
+    try {
+      await loadRayongData();
+      toast("โหลดชุดข้อมูลจริง วท.ระยอง 2/2569 (ครู 10 ท่าน, 12 กลุ่ม, 36 วิชา) สำเร็จใน 1-Click!", "ok");
+    } catch (e) {
+      toast(`โหลดไม่สำเร็จ: ${errorMessage(e)}`, "danger");
+    } finally {
+      setLoadingPreset(false);
+    }
+  };
+
   return (
     <>
-      <PageHeader title="นำเข้าข้อมูล" description="นำเข้าข้อมูลหลักจากไฟล์ Excel (.xlsx) หรือ CSV — ตรวจสอบก่อนบันทึกทุกครั้ง" />
+      <PageHeader
+        title="นำเข้าข้อมูล"
+        description="นำเข้าข้อมูลหลักจากไฟล์ Excel (.xlsx) หรือ CSV — ตรวจสอบก่อนบันทึกทุกครั้ง หรือเลือกโหลดข้อมูลตัวอย่างพร้อมใช้ใน 1 คลิก"
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="primary"
+              size="sm"
+              loading={loadingPreset}
+              onClick={handle1ClickRayong}
+              title="โหลดชุดข้อมูลจริง แผนกเทคโนโลยีสารสนเทศ วิทยาลัยเทคนิคระยอง ภาคเรียน 2/2569 ทั้งหมด"
+            >
+              ⚡ 1-Click โหลดข้อมูลจริง วท.ระยอง
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => resetToMock().then(() => toast("โหลดชุดข้อมูลมาตรฐานสังเคราะห์แล้ว", "ok"))}>
+              🔄 ข้อมูลจำลองสังเคราะห์
+            </Button>
+          </div>
+        }
+      />
+
       {done ? (
         <Card title="นำเข้าสำเร็จ">
           <div className="flex flex-col gap-4">
-            <Alert tone="ok" title={`บันทึก${IMPORT_SPECS[done.kind].label} ${done.count} รายการแล้ว`}>
+            <Alert tone="ok" title={`บันทึก ${IMPORT_SPECS[done.kind].label} ${done.count} รายการแล้ว`}>
               ตรวจสอบหรือแก้ไขเพิ่มเติมได้ที่หน้าจัดการข้อมูล
             </Alert>
             <div className="flex flex-wrap gap-2">
@@ -92,6 +123,20 @@ export default function ImportPage() {
         </Card>
       ) : (
         <>
+          <div className="mb-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="font-semibold text-primary">💡 ต้องการทดสอบความเร็วแบบ 1-Click หรือไม่?</h3>
+                <p className="text-xs text-muted">
+                  คลิกปุ่มเพื่อโหลดข้อมูลโครงสร้างจริงของ วิทยาลัยเทคนิคระยอง ภาค 2/2569 (ครู 10 ท่าน, ปวช./ปวส. 12 กลุ่ม, 36 วิชา) เข้าสู่ระบบทันที
+                </p>
+              </div>
+              <Button variant="primary" size="sm" loading={loadingPreset} onClick={handle1ClickRayong}>
+                โหลดข้อมูลจริง วท.ระยอง (1-Click)
+              </Button>
+            </div>
+          </div>
+
           <StepIndicator step={step} />
           {step === 1 && <KindStep kind={kind} onSelect={selectKind} onNext={() => setStep(2)} />}
           {step === 2 && spec && (
