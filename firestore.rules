@@ -1,0 +1,124 @@
+rules_version = '2';
+// Firestore Security Rules — ระบบจัดตารางการเรียนการสอน
+// หลักการ: deny-by-default, ทุก path ผูก schoolId กับ custom claims,
+// ตาราง/views/jobs/imports/audit/users เขียนได้เฉพาะ server (Admin SDK ข้าม rules)
+// ทดสอบ: tests/rules/firestore.rules.test.ts (รันด้วย Emulator ใน CI)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function authed()      { return request.auth != null; }
+    function claim(k)      { return request.auth.token.get(k, null); }
+    function inSchool(s)   { return authed() && claim('schoolId') == s; }
+    function isMember(s)   { return inSchool(s) && claim('role') in ['admin', 'teacher', 'student']; }
+    function isAdmin(s)    { return inSchool(s) && claim('role') == 'admin'; }
+    function isTeacher(s)  { return inSchool(s) && claim('role') == 'teacher'; }
+    function isStudent(s)  { return inSchool(s) && claim('role') == 'student'; }
+    function myGroup(g)    { return g in request.auth.token.get('groupIds', []); }
+    function versionStatus(s, t, v) {
+      return get(/databases/$(database)/documents/schools/$(s)/terms/$(t)/timetables/$(v)).data.status;
+    }
+
+    // โปรไฟล์ผู้ใช้ — เขียนโดย server เท่านั้น
+    match /users/{uid} {
+      allow read: if authed() && (request.auth.uid == uid || isAdmin(resource.data.schoolId));
+      allow write: if false;
+    }
+
+    match /schools/{s} {
+      allow read: if isMember(s);
+      // admin แก้ข้อมูลสถานศึกษาได้เฉพาะฟิลด์ที่กำหนด; ลบไม่ได้
+      allow create, update: if isAdmin(s)
+        && request.resource.data.keys().hasOnly(['name', 'regularEndTime', 'signatories', 'timezone', 'activeTermId']);
+      allow delete: if false;
+
+      // นักเรียน (PII ขั้นต่ำ) — admin หรือเจ้าของข้อมูลเท่านั้น
+      match /students/{id} {
+        allow read: if isAdmin(s) || (isStudent(s) && claim('studentId') == id);
+        allow write: if isAdmin(s);
+      }
+      match /academicYears/{id} {
+        allow read: if isMember(s);
+        allow write: if isAdmin(s);
+      }
+      match /importBatches/{id} {
+        allow read: if isAdmin(s);
+        allow write: if false;
+      }
+      match /auditLog/{id} {
+        allow read: if isAdmin(s);
+        allow write: if false;
+      }
+
+      match /terms/{t} {
+        allow read: if isMember(s);
+        // publishedVersionId ตั้งได้เฉพาะ server ตอนเผยแพร่
+        allow create: if isAdmin(s)
+          && request.resource.data.keys().hasOnly(['year', 'term', 'status', 'name', 'yearId', 'startDate', 'endDate']);
+        allow update: if isAdmin(s)
+          && request.resource.data.keys().hasOnly(['year', 'term', 'status', 'name', 'yearId', 'startDate', 'endDate', 'publishedVersionId'])
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['publishedVersionId']);
+        allow delete: if false;
+
+        match /config/{d} {
+          allow read: if isMember(s);
+          allow write: if isAdmin(s);
+        }
+        // ข้อมูลหลักที่ใช้แสดงตาราง: สมาชิกของสถานศึกษาอ่านได้, admin เขียน
+        match /courses/{id} {
+          allow read: if isMember(s);
+          allow write: if isAdmin(s);
+        }
+        match /teachers/{id} {
+          allow read: if isMember(s);
+          allow write: if isAdmin(s);
+        }
+        match /rooms/{id} {
+          allow read: if isMember(s);
+          allow write: if isAdmin(s);
+        }
+        match /groups/{id} {
+          allow read: if isMember(s);
+          allow write: if isAdmin(s);
+        }
+        match /activities/{id} {
+          allow read: if isMember(s);
+          allow write: if isAdmin(s);
+        }
+        // assignments จำเป็นต่อการถอดรหัสตารางที่เผยแพร่ (ไม่มี PII)
+        match /assignments/{id} {
+          allow read: if isMember(s);
+          allow write: if isAdmin(s);
+        }
+        match /enrollments/{id} {
+          allow read: if isAdmin(s) || (isStudent(s) && claim('studentId') == id);
+          allow write: if isAdmin(s);
+        }
+
+        // ตาราง: admin อ่านทุกสถานะ; สมาชิกอื่นอ่านได้เฉพาะฉบับที่เผยแพร่ (ฉบับร่างมองไม่เห็น)
+        match /timetables/{v} {
+          allow read: if isAdmin(s) || (isMember(s) && resource.data.status == 'published');
+          allow write: if false;
+
+          // views อ่านได้เมื่อเวอร์ชันแม่เผยแพร่แล้วเท่านั้น (เขียนก่อนเปลี่ยนสถานะได้โดยไม่รั่ว)
+          match /views/{viewId} {
+            allow read: if isAdmin(s)
+              || (isMember(s) && versionStatus(s, t, v) == 'published' && (
+                   (isTeacher(s) && viewId == 't_' + claim('teacherId'))
+                || (isStudent(s) && viewId.matches('^g_.+') && myGroup(viewId.replace('^g_', '')))
+              ));
+            allow write: if false;
+          }
+        }
+
+        match /solverJobs/{j} {
+          allow read: if isAdmin(s);
+          allow write: if false;
+          match /logs/{c} {
+            allow read: if isAdmin(s);
+            allow write: if false;
+          }
+        }
+      }
+    }
+  }
+}

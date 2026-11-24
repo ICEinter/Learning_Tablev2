@@ -1,0 +1,22 @@
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+.netlify/
+.firebase/
+.wrangler/
+.open-next/
+.dev.vars
+# secrets — ห้าม commit
+.env
+.env*.local
+*service-account*.json
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+bench/results/*.tmp
+
+.chrome-temp/
+

@@ -1,0 +1,98 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "timetables",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "publishedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "timetables",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "solverJobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "assignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "teacherId", "order": "ASCENDING" },
+        { "fieldPath": "courseId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "teachers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "department", "order": "ASCENDING" },
+        { "fieldPath": "code", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "courses",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "department", "order": "ASCENDING" },
+        { "fieldPath": "code", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "rooms",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "code", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "auditLog",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "entityType", "order": "ASCENDING" },
+        { "fieldPath": "at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "importBatches",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "schoolId", "order": "ASCENDING" },
+        { "fieldPath": "role", "order": "ASCENDING" },
+        { "fieldPath": "displayName", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    { "collectionGroup": "timetables", "fieldPath": "entries", "indexes": [] },
+    { "collectionGroup": "timetables", "fieldPath": "dict", "indexes": [] },
+    { "collectionGroup": "views", "fieldPath": "rows", "indexes": [] },
+    { "collectionGroup": "solverJobs", "fieldPath": "logTail", "indexes": [] },
+    { "collectionGroup": "solverJobs", "fieldPath": "params", "indexes": [] },
+    { "collectionGroup": "importBatches", "fieldPath": "errors", "indexes": [] },
+    { "collectionGroup": "auditLog", "fieldPath": "diff", "indexes": [] },
+    { "collectionGroup": "teachers", "fieldPath": "unavailable", "indexes": [] },
+    { "collectionGroup": "teachers", "fieldPath": "preferredOff", "indexes": [] },
+    { "collectionGroup": "rooms", "fieldPath": "unavailable", "indexes": [] },
+    { "collectionGroup": "config", "fieldPath": "periods", "indexes": [] }
+  ]
+}

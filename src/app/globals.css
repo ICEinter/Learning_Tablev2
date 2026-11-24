@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Sarabun";
+  src: url("/fonts/Sarabun-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sarabun";
+  src: url("/fonts/Sarabun-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Design tokens — โทนคลีนมินิมอล (Clean & Minimalist) */
+@theme {
+  --color-page: #f7f7f7;
+  --color-surface: #ffffff;
+  --color-ink: #2c2c2c;
+  --color-muted: #5c5c5c;
+  --color-line: #d9d9d9;
+  --color-line-strong: #bdbdbd;
+  --color-accent: #1561ad;
+  --color-accent-hover: #0f4c8a;
+  --color-accent-soft: #e8f0f9;
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+  --color-warn: #a15c07;
+  --color-warn-soft: #fef4e6;
+  --color-ok: #067647;
+  --color-ok-soft: #e7f6ee;
+  --color-activity: #f1f1f1;
+  --font-sans: "Sarabun", "Leelawadee UI", "Tahoma", sans-serif;
+}
+
+html,
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* กิจกรรม/คาบพัก: ลายเส้นทแยง แยกจากคาบสอน */
+.bg-hatch {
+  background-image: repeating-linear-gradient(135deg, #ececec 0 6px, #f8f8f8 6px 12px);
+}
+
+.vertical-text {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: 0 !important;
+    padding: 0 !important;
+  }
+  .print-break {
+    break-after: page;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tr,
+  td,
+  th {
+    break-inside: avoid;
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "name": "learning-table",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ระบบจัดตารางการเรียนการสอน (Next.js + Firebase)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "start": "next start",
+    "cloudflare:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cloudflare:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cloudflare:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:rules": "npx firebase-tools@latest emulators:exec --only firestore \"vitest run --config vitest.rules.config.ts\"",
+    "bench": "tsx scripts/bench.ts"
+  },
+  "dependencies": {
+    "exceljs": "4.4.0",
+    "firebase": "13.2.0",
+    "firebase-admin": "14.5.0",
+    "next": "16.4.6",
+    "pdfmake": "0.3.14",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "@opennextjs/cloudflare": "^1.20.16",
+    "@tailwindcss/postcss": "4.3.5",
+    "@types/node": "24.19.2",
+    "@types/pdfmake": "0.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.6",
+    "fast-check": "4.10.2",
+    "tailwindcss": "4.3.5",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "5.1.0",
+    "wrangler": "^4.160.0"
+  }
+}
